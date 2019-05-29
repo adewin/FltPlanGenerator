@@ -1,34 +1,78 @@
 import sqlite3
 import xml.etree.ElementTree as ET
-from xml.etree import ElementTree
 
+def create_connection(db_file):
+    """ create a database connection to the SQLite database
+        specified by db_file
+    :param db_file: database file
+    :return: Connection object or None
+    """
+    try:
+        conn = sqlite3.connect(db_file)
+        return conn
+    except sqlite3.Error as e:
+        print(e)
 
-def dontuse():
-    conn = sqlite3.connect("waypoints.db")
+    return None
+
+def setup_db():
+    conn = create_connection("waypoints.db")
     c = conn.cursor()
-    c.execute('''CREATE TABLE waypoints
-                 (lat text, long text, magvar text, name text, type text, navaidname text, navaidstate text, navaidcountry text, freqtype text, freq text, freqname text)''')
+    c.execute('''CREATE TABLE airports
+                 (lat text, long text, magvar text, name text, navaidname text, navaidcountry text, frequencies text, runways text)''')
+    c.close()
+    # Frequencies column schema: type:freq,type:freq
+    # Runways column schema: name,length,width,surface
+
+def insert_airport(lat, long, magvar, name, navaidname, navaidcountry, frequencies, runways):
+    conn = create_connection("waypoints.db")
+    sql = "INSERT INTO airports(lat,long,magvar,name,navaidname,navaidcountry,frequencies,runways) " \
+          "VALUES ({},{},{},{},{},{},{},{})".format(lat, long, magvar, name, navaidname, navaidcountry, frequencies, runways)
+    print(sql)
+    c = conn.cursor()
+    c.execute(sql)
+    c.close()
+
+
+
+def move_airport_from_gpx_to_db():
+    print("Migrating airports from gpx file to sqlite3 file...")
+    for wpt in root:
+        type = wpt.find("d:type", ns).text
+        if type == "AIRPORT":
+            lat = wpt.get("lat")
+            long = wpt.get("lon")
+            name = wpt.find("d:name", ns).text
+            print("Found airport: " + name)
+            extensions = wpt.find("d:extensions", ns)
+            navaidname = extensions.find("n:name", navaid).text
+            navaidcountry = extensions.find("n:country", navaid).text
+            magvar = extensions.find("n:magvar", navaid).text
+            frequencies_element = extensions.find("n:frequencies", navaid)
+            runways_element = extensions.find("n:runways", navaid)
+            frequencies = []
+            runways = []
+
+            if frequencies_element is not None:
+                for frequency in frequencies_element:
+                    freqtype = frequency.get("type")
+                    freq = frequency.get("frequency")
+                    frequencies.append({"type": freqtype, "freq": freq})
+
+            if runways_element is not None:
+                for runway in runways_element:
+                    designation = runway.get("designation")
+                    length = runway.get("length")
+                    width = runway.get("width")
+                    surface = runway.get("surface")
+                    runways.append({"designation": designation, "length": length, "width": width, "surface": surface})
+
+            print("Inserting airport into database...")
+            insert_airport(lat, long, magvar, name, navaidname, navaidcountry, frequencies, runways)
 
 tree = ET.parse("file0TZYyc.gpx")
 ns = {'d': "http://www.topografix.com/GPX/1/1"}
 navaid = {"n": "http://navaid.com/GPX/NAVAID/1/0"}
 root = tree.getroot()
-
-for wpt in root:
-    lat = wpt.get("lat")
-    long = wpt.get("lon")
-    magvar = wpt.find("d:magvar", ns).text
-    name = wpt.find("d:name", ns).text
-    type = wpt.find("d:type", ns).text
-    extensions = wpt.find("d:extensions", ns)
-    navaidname = extensions.find("n:name", navaid).text
-    navaidstate = extensions.find("n:state", navaid).text
-    navaidcountry = extensions.find("n:country", navaid).text
-    freqtype =
-
-    print("Latitude: " + lat)
-    print("Longitude: " + long)
-    print("Magnetic Variation: " + magvar)
-    print("Name: " + name)
-    print("Type: " + type)
-    print("Navaid Name: " + navaidname)
+setup_db()
+move_airport_from_gpx_to_db()
