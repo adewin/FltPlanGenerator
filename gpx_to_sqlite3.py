@@ -59,8 +59,6 @@ def move_airport_from_gpx_to_db():
     print("Migrating airports from gpx file to sqlite3 file...")
     count = 0
     for wpt in root:
-        if count >= 1000:
-            break
         type = wpt.find("d:type", ns).text
         if type == "AIRPORT":
             count += 1
@@ -96,6 +94,7 @@ def move_airport_from_gpx_to_db():
             freq_string = frequuency_dict_array_to_str(frequencies)
             #print("Inserting airport into database...")
             insert_airport(lat, long, magvar, name, navaidname, navaidcountry, freq_string, runways_string)
+
 
 
 tree = ET.parse("file0TZYyc.gpx")

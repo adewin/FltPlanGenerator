@@ -1,5 +1,6 @@
 import math
 import sqlite3
+from math import radians, cos, sin, asin, sqrt
 import xml.etree.ElementTree as ET
 
 
@@ -22,6 +23,15 @@ def create_connection(db_file):
         print(e)
 
     return None
+
+
+def get_airport(ident):
+    conn = create_connection("waypoints.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM airports WHERE name=?", (ident,))
+    airport1_response = c.fetchall()[0]
+    new_airport = airport(float(airport1_response[0]), float(airport1_response[1]), airport1_response[2])
+    return new_airport
 
 
 def calculate_initial_compass_bearing(pointA, pointB):
@@ -78,4 +88,27 @@ def angle_between_airports(airport1_ident, airport2_ident):
     print(heading)
 
 
-print(angle_between_airports("CYBF", "CYF8"))
+def distance_between_airports(airport1, airport2):
+    """
+    Calculate the great circle distance between two points
+    on the earth (specified in decimal degrees)
+    """
+    # convert decimal degrees to radians
+    lon1 = airport1.long
+    lat1 = airport1.lat
+    lon2 = airport2.long
+    lat2 = airport2.lat
+    lon1, lat1, lon2, lat2 = map(radians, [lon1, lat1, lon2, lat2])
+
+    # haversine formula
+    dlon = lon2 - lon1
+    dlat = lat2 - lat1
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    r = 3956 # Radius of earth in miles. Use 6371 for kilometers
+    return c * r / 1.151
+
+airport1 = get_airport("KGAI")
+airport2 = get_airport("KRDD")
+
+print(distance_between_airports(airport1, airport2))
