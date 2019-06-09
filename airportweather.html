@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <title>Airport Weather</title>
+    <style>
+    .centeredTable{
+      margin-left: auto;
+      margin-right: auto;
+      max-width: 500px;
+      margin-top: 25px;
+    }
+    </style>
+    <script type="text/javascript">
+      function getMetar(icao){
+        metar = getWeather(icao);
+        console.log(icao);
+        var table = document.createElement("TABLE");
+        table.setAttribute("class", "table table-dark centeredTable");
+        var header = table.createTHead();
+        
+
+        newRow(table, "Time", metar.time.repr);
+        newRow(table, "Wind", evalWind(metar));
+        newRow(table, "Visibility", metar.visibility.repr + " sm");
+        newRow(table, "Clouds", evalClouds(metar.clouds));
+        newRow(table, "Temperature", metar.temperature.repr + "°C (" + (metar.temperature.repr * (9/5) + 32) + "°F)");
+        newRow(table, "Dewpoint", metar.dewpoint.repr + "°C (" + (metar.dewpoint.repr * (9/5) + 32) + "°F)");
+        newRow(table, "Altimeter", metar.altimeter.value + " inHg");
+        //newRow(table, "Raw", metar.sanitized);
+
+        var container = document.getElementById("container");
+        container.appendChild(table);
+        return(false);
+      }
+      function getWeather(icao){
+        var http = new XMLHttpRequest();
+        var url = "http://avwx.rest/api/metar/" + icao + "?options=&format=json&onfail=cache";
+        http.open("GET", url, false);
+        var responseJSON = "";
+        http.onreadystatechange=(e)=>{
+          if(http.readyState ===4){
+            responseJSON = http.responseText;
+          }
+        };
+        http.send();
+        var response = JSON.parse(responseJSON);
+        console.log(response);
+        console.log(response.altimeter.value);
+        return(response);
+      }
+      function newRow(table, text1, text2){
+        var row = table.insertRow();
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = text1;
+        cell2.innerHTML = text2;
+      }
+      function evalWind(metar){
+        if(metar.wind_direction.repr === "000" && metar.wind_speed.repr === "00"){
+          return("Calm");
+        }
+        return(metar.wind_direction.repr + "°" + " at " + metar.wind_speed.repr + " kts");
+      }
+      function evalClouds(clouds){
+        cloudstr = ""
+        for(cloudindex = 0; cloudindex < clouds.length; cloudindex ++){
+          if(clouds[cloudindex] != null && clouds[cloudindex + 1] != null){
+            cloudstr += clouds[cloudindex].type + " @ " + clouds[cloudindex].altitude + "00 ft, ";
+          }
+          else if(clouds[cloudindex] != null){
+            cloudstr += clouds[cloudindex].type + " @ " + clouds[cloudindex].altitude + "00 ft";
+          }
+        }
+        if(cloudstr === ""){
+          return("Clear");
+        }
+        return(cloudstr);
+      }
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+      <!-- Links -->
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="airportweather.html">Airport Weather</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Map</a>
+        </li>
+      </ul>
+    </nav>
+    <section id="cover">
+        <div id="cover-caption">
+            <div id="container" class="container">
+                <div class="row text-white">
+                    <div class="col-sm-6 offset-sm-3 md-4 text-center">
+                    <div class="form-group ">
+                        <label class="control-label requiredField" for="jobid">
+                          Valid ICAO Station Identifier
+                        </label>
+                        <input class="form-control" id="id" name="id" placeholder="KGAI" type="text" required>
+                    </div>
+                    <button type="submit" class="btn btn-success " onClick="return(getMetar(document.getElementById('id').value))">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+  </body>
+</html>
+<style>
+    html,
+    body{
+     height: 100%;
+     background: #454d55;
+    }
+    hr {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      border: 0;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <script>
+          var map;
+          function initMap() {
+            map = new google.maps.Map(document.getElementById('map'), {
+              center: {lat: -34.397, lng: 150.644},
+              zoom: 8
+            });
+          }
+        </script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCCNwm3p7hfYd3WwR1dkeGzm1tcMTzhLcw&callback=initMap"
+        async defer></script>
+
+    <title>Custom Flightplan</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-sm bg-dark navbar-dark">
+      <!-- Links -->
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Weather Charts</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="airportweather.html">Airport Weather</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="editschedule.html">Custom Flightplan</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="schedules.php?filter=today">Automatic Flightplan</a>
+        </li>
+      </ul>
+    </nav>
+    <section id="cover">
+        <div id="cover-caption">
+            <div id="container" class="container">
+                <div class="row text-white">
+                    <div class="col-sm-6 offset-sm-3 md-4 text-center">
+                        <label class="control-label requiredField" for="jobid">
+                          Route of flight separated by spaces
+                        </label>
+                        <div class="input-group">                            
+                            <input class="form-control" id="id" name="id" placeholder="KGAI EMI KLNS" type="text" required>
+                            <span class="input-group-btn">
+                                <button type="submit" class="btn btn-success " onClick="return(getMetar(document.getElementById('id').value))">Apply</button>
+                            </span>
+                        </div>
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+  </body>
+</html>
+<style>
+    html,
+    body{
+     height: 100%;
+     background: #454d55;
+    }
+    hr {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+      border: 0;
+      border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+</style>
